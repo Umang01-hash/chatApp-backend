@@ -1,10 +1,12 @@
 const Joi = require("joi");
 const HttpStatus = require("http-status-codes");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const User = require("../models/userModels");
 const Helpers = require("../Helpers/helpers");
-
+const dbconfig = require("../config/secret");
+const { token } = require("morgan");
 module.exports = {
   async CreateUser(req, res) {
     const schema = Joi.object({
@@ -49,15 +51,57 @@ module.exports = {
         email: Helpers.lowerCase(value.email),
         password: hash,
       };
-      User.create(body).then((user) => {
-        res
-          .status(HttpStatus.CREATED)
-          .json({ message: "User created successfully", user });
-      }).catch(err => {
-        res
+      User.create(body)
+        .then((user) => {
+          const token = jwt.sign({ data: user }, dbconfig.secret, {
+            expiresIn: 120,
+          });
+          res.cookie("auth", token);
+          res
+            .status(HttpStatus.CREATED)
+            .json({ message: "User created successfully", user, token });
+        })
+        .catch((err) => {
+          res
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .json({ message: "Error occured" });
+        });
+    });
+  },
+
+  async LoginUser(req, res) {
+    if (!req.body.username || !req.body.password) {
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "No empty fields allowed" });
+    }
+
+    await User.findOne({
+      username: Helpers.firstUpper(req.body.username)
+    })
+      .then(user => {
+        if (!user) {
+          return res
+            .status(HttpStatus.NOT_FOUND)
+            .json({ message: "Username not found" });
+        }
+        return bcrypt
+          .compare(req.body.password, user.password)
+          .then((result) => {
+            if(!result) {
+              return res
+              .status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .json({ message: "Password is incorrect" });
+            }
+            const token = jwt.sign({data: user}, dbconfig.secret, { expiresIn: 10000});
+            res.cookie('auth',token);
+            return res.status(HttpStatus.OK).json({message: "Login Successful", user, token});
+          });
+      })
+      .catch((err) => {
+        return res
           .status(HttpStatus.INTERNAL_SERVER_ERROR)
           .json({ message: "Error occured" });
       });
-    });
   },
 };
