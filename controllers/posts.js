@@ -42,7 +42,7 @@ module.exports = {
       })
       .catch((err) => {
         res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
           .json({ message: "error occured" });
       });
   },

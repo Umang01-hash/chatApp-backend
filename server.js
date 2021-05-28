@@ -11,7 +11,14 @@ app.use(cors());
 const dbconfig = require("./config/secret");
 
 const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+const io = require('socket.io')(server,{
+  cors: {
+    // Client Port
+    origin: "http://localhost:4200", 
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
 
 app.use((req, res, next) => {
   res.header("Access-COntrol-Allow-Origin", "*");
