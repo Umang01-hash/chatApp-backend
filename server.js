@@ -10,6 +10,9 @@ app.use(cors());
 
 const dbconfig = require("./config/secret");
 
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
+
 app.use((req, res, next) => {
   res.header("Access-COntrol-Allow-Origin", "*");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -39,12 +42,14 @@ mongoose.connect(dbconfig.url, {
   useUnifiedTopology: true,
 });
 
+require('./socket/streams')(io);
+
 const auth = require("./routes/authRoutes");
 const posts = require('./routes/postRoutes');
 
 app.use("/api/chatapp", auth);
 app.use('/api/chatapp', posts);
 
-app.listen(3000, () => {
+server.listen(3000, () => {
   console.log("Running on Port 3000");
 });
