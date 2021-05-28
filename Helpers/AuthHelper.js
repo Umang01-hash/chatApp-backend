@@ -13,7 +13,7 @@ module.exports = {
     
     if (!token) {
       return res
-        .status(HttpStatus.FORBIDDEN)
+        .status(HttpStatus.StatusCodes.FORBIDDEN)
         .json({ message: "No token provided" });
     }
 
@@ -21,7 +21,7 @@ module.exports = {
       if (err) {
         if (err.expiredAt < new Date()) {
           return res
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
             .json({
               message: "Token has expired please Login Again",
               token: null,
