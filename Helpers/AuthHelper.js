@@ -6,7 +6,8 @@ const dbConfig = require("../config/secret");
 module.exports = {
   VerifyToken: (req, res, next) => {
     const token = req.cookies.auth;
-
+    console.log(req.headers);
+    
     if (!token) {
       return res
         .status(HttpStatus.FORBIDDEN)
