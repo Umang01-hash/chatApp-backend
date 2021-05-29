@@ -24,7 +24,7 @@ module.exports = {
 
     Post.create(body)
       .then(async (post) => {
-        await User.update(
+        await User.updateOne(
           {
             _id: req.user._id,
           },
@@ -38,7 +38,7 @@ module.exports = {
             },
           }
         );
-        res.status(HttpStatus.OK).json({ message: "Post created", post });
+        res.status(HttpStatus.StatusCodes.OK).json({ message: "Post created", post });
       })
       .catch((err) => {
         res
@@ -59,4 +59,57 @@ module.exports = {
         .json({ message: "Error Occured" });
     }
   },
-};
+
+  async AddLike(req, res) {
+    const postId = req.body._id;
+    await Post.updateOne(
+      {
+        _id: postId,
+        'likes.username': { $ne: req.user.username }
+      },
+      {
+        $push: {
+          likes: {
+            username: req.user.username
+          }
+        },
+        $inc: { totalLikes: 1 }
+      }
+    )
+      .then(() => {
+        res.status(HttpStatus.StatusCodes.OK).json({ message: 'You liked the post' });
+      })
+      .catch(err =>
+        res
+          .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ message: 'Error occured' })
+      );
+  },
+
+  async AddComment(req, res) {
+    const postId = req.body.postId;
+    await Post.updateOne(
+      {
+        _id: postId
+      },
+      {
+        $push: {
+          comments: {
+            userId: req.user._id,
+            username: req.user.username,
+            comment: req.body.comment,
+            createdAt: new Date()
+          }
+        }
+      }
+    )
+      .then(() => {
+        res.status(HttpStatus.StatusCodes.OK).json({ message: 'Comment added to post' });
+      })
+      .catch(err =>
+        res
+          .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ message: 'Error occured' })
+      );
+  },
+  };
