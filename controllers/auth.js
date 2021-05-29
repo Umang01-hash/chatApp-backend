@@ -18,7 +18,7 @@ module.exports = {
     const { error, value } = schema.validate(req.body);
     if (error && error.details) {
       return res
-        .status(HttpStatus.BAD_REQUEST)
+        .status(HttpStatus.StatusCodes.BAD_REQUEST)
         .json({ message: error.details });
     }
 
@@ -27,7 +27,7 @@ module.exports = {
     });
     if (userEmail) {
       return res
-        .status(HttpStatus.CONFLICT)
+        .status(HttpStatus.StatusCodes.CONFLICT)
         .json({ message: "Email already exist" });
     }
 
@@ -36,14 +36,14 @@ module.exports = {
     });
     if (userName) {
       return res
-        .status(HttpStatus.CONFLICT)
+        .status(HttpStatus.StatusCodes.CONFLICT)
         .json({ message: "username already exists" });
     }
 
     return bcrypt.hash(value.password, 10, (err, hash) => {
       if (err) {
         return res
-          .status(HttpStatus.BAD_REQUEST)
+          .status(HttpStatus.StatusCodes.BAD_REQUEST)
           .json({ message: "Error hashing password" });
       }
       const body = {
@@ -58,12 +58,12 @@ module.exports = {
           });
           res.cookie("auth", token);
           res
-            .status(HttpStatus.CREATED)
+            .status(HttpStatus.StatusCodes.CREATED)
             .json({ message: "User created successfully", user, token });
         })
         .catch((err) => {
           res
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
             .json({ message: "Error occured" });
         });
     });
@@ -72,7 +72,7 @@ module.exports = {
   async LoginUser(req, res) {
     if (!req.body.username || !req.body.password) {
       return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
         .json({ message: "No empty fields allowed" });
     }
 
@@ -82,7 +82,7 @@ module.exports = {
       .then(user => {
         if (!user) {
           return res
-            .status(HttpStatus.NOT_FOUND)
+            .status(HttpStatus.StatusCodes.NOT_FOUND)
             .json({ message: "Username not found" });
         }
         return bcrypt
@@ -90,17 +90,17 @@ module.exports = {
           .then((result) => {
             if(!result) {
               return res
-              .status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
               .json({ message: "Password is incorrect" });
             }
             const token = jwt.sign({data: user}, dbconfig.secret, { expiresIn: "1h"});
             res.cookie('auth',token);
-            return res.status(HttpStatus.OK).json({message: "Login Successful", user, token});
+            return res.status(HttpStatus.StatusCodes.OK).json({message: "Login Successful", user, token});
           });
       })
       .catch((err) => {
         return res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
           .json({ message: "Error occured" });
       });
   },

@@ -38,7 +38,9 @@ module.exports = {
             },
           }
         );
-        res.status(HttpStatus.StatusCodes.OK).json({ message: "Post created", post });
+        res
+          .status(HttpStatus.StatusCodes.OK)
+          .json({ message: "Post created", post });
       })
       .catch((err) => {
         res
@@ -65,24 +67,26 @@ module.exports = {
     await Post.updateOne(
       {
         _id: postId,
-        'likes.username': { $ne: req.user.username }
+        "likes.username": { $ne: req.user.username },
       },
       {
         $push: {
           likes: {
-            username: req.user.username
-          }
+            username: req.user.username,
+          },
         },
-        $inc: { totalLikes: 1 }
+        $inc: { totalLikes: 1 },
       }
     )
       .then(() => {
-        res.status(HttpStatus.StatusCodes.OK).json({ message: 'You liked the post' });
+        res
+          .status(HttpStatus.StatusCodes.OK)
+          .json({ message: "You liked the post" });
       })
-      .catch(err =>
+      .catch((err) =>
         res
           .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ message: 'Error occured' })
+          .json({ message: "Error occured" })
       );
   },
 
@@ -90,7 +94,7 @@ module.exports = {
     const postId = req.body.postId;
     await Post.updateOne(
       {
-        _id: postId
+        _id: postId,
       },
       {
         $push: {
@@ -98,18 +102,36 @@ module.exports = {
             userId: req.user._id,
             username: req.user.username,
             comment: req.body.comment,
-            createdAt: new Date()
-          }
-        }
+            createdAt: new Date(),
+          },
+        },
       }
     )
       .then(() => {
-        res.status(HttpStatus.StatusCodes.OK).json({ message: 'Comment added to post' });
+        res
+          .status(HttpStatus.StatusCodes.OK)
+          .json({ message: "Comment added to post" });
       })
-      .catch(err =>
+      .catch((err) =>
         res
           .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ message: 'Error occured' })
+          .json({ message: "Error occured" })
       );
   },
-  };
+
+  async GetPost(req, res) {
+    await Post.findOne({ _id: req.params.id })
+      .populate("user")
+      .populate("comments.userId")
+      .then((post) => {
+        res
+          .status(HttpStatus.StatusCodes.OK)
+          .json({ message: "Post found", post });
+      })
+      .catch((err) => {
+        res
+          .status(HttpStatus.StatusCodes.NOT_FOUND)
+          .json({ message: "Post not found", post });
+      });
+  },
+};
