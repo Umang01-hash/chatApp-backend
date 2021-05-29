@@ -14,7 +14,7 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server,{
   cors: {
     // Client Port
-    origin: "http://localhost:4200", 
+    origin: "http://localhost:4200",
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -53,9 +53,11 @@ require('./socket/streams')(io);
 
 const auth = require("./routes/authRoutes");
 const posts = require('./routes/postRoutes');
+const users = require('./routes/userRoutes');
 
 app.use("/api/chatapp", auth);
 app.use('/api/chatapp', posts);
+app.use('/api/chatapp',users);
 
 server.listen(3000, () => {
   console.log("Running on Port 3000");
