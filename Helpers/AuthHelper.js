@@ -9,7 +9,6 @@ module.exports = {
       return res.status(HttpStatus.StatusCodes.UNAUTHORIZED).json({ message: 'No Authorization'});
     }
     const token = req.cookies.auth || req.headers.authorization.split(' ')[1];
-    console.log(token);
     
     if (!token) {
       return res
