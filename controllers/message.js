@@ -3,6 +3,7 @@ const httpStatus = require("http-status-codes");
 const Message = require("../models/messageModels");
 const Conversation = require("../models/conversationModels");
 const User = require("../models/userModels");
+const Helper=require('../Helpers/helpers.js')
 
 module.exports = {
   async GetAllMessages(req, res) {
@@ -54,6 +55,8 @@ module.exports = {
       },
       async (err, result) => {
         if (result.length > 0) {
+          const msg = await Message.findOne({conversationId: result[0]._id });
+          Helper.updateChatList(req,msg);
           await Message.updateOne(
             {
               conversationId: result[0]._id,
@@ -155,4 +158,34 @@ module.exports = {
       }
     );
   },
+
+  async MarkReceiverMessages(req,res){
+    const { sender , receiver } = req.params;
+    const msg = await Message.aggregate([
+      {$unwind : '$message'},
+      {
+        $match : {
+          $and: [{ 'message.sendername': receiver , 'message.receivername': sender }]
+        }
+      }
+    ]);
+
+    ;
+
+    if(msg.length>0){
+      try{
+        msg.forEach(async (value) => {
+          await Message.updateMany(
+            {
+              'message._id' : value.message._id
+            },
+            { $set : { 'message.$.isRead' : true } }
+          )
+        });
+        res.status(httpStatus.StatusCodes.Ok).json({ message: 'Messages marked as read '});
+      }catch(err){
+        res.status(httpStatus.StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured'});
+      }
+    }
+  }
 };

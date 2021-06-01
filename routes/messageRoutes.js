@@ -11,6 +11,8 @@ router.get(
   MessageCtrl.GetAllMessages
 );
 
+router.get('/receiver-messages/:sender/:receiver', AuthHelper.VerifyToken , MessageCtrl.MarkReceiverMessages)
+
 router.post(
     '/chat-messages/:sender_Id/:receiver_Id',
     AuthHelper.VerifyToken,

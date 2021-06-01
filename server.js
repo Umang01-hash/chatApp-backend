@@ -8,7 +8,6 @@ const app = express();
 
 app.use(cors());
 
-const dbconfig = require("./config/secret");
 
 const server = require('http').createServer(app);
 const io = require('socket.io')(server,{
@@ -19,6 +18,18 @@ const io = require('socket.io')(server,{
     credentials: true
   }
 });
+
+
+require('./socket/streams')(io);
+require('./socket/private')(io);
+
+const dbconfig = require("./config/secret");
+const auth = require("./routes/authRoutes");
+const posts = require('./routes/postRoutes');
+const users = require('./routes/userRoutes');
+const friends = require('./routes/friendsRoute');
+const message=require('./routes/messageRoutes');
+
 
 app.use((req, res, next) => {
   res.header("Access-COntrol-Allow-Origin", "*");
@@ -49,14 +60,6 @@ mongoose.connect(dbconfig.url, {
   useUnifiedTopology: true,
 });
 
-require('./socket/streams')(io);
-require('./socket/private')(io);
-
-const auth = require("./routes/authRoutes");
-const posts = require('./routes/postRoutes');
-const users = require('./routes/userRoutes');
-const friends = require('./routes/friendsRoute');
-const message=require('./routes/messageRoutes');
 
 app.use("/api/chatapp", auth);
 app.use('/api/chatapp', posts);
