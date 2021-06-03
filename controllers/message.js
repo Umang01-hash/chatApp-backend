@@ -187,5 +187,30 @@ module.exports = {
         res.status(httpStatus.StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured'});
       }
     }
+  },
+
+  async MarkAllMessages(req,res){
+
+    const msg = await Message.aggregate([
+      { $match: {'message.receivername' : req.user.username}},
+      {$unwind: '$message'},
+      { $match: {'message.receivername' : req.user.username}},
+    ]);
+
+    if(msg.length>0){
+      try{
+        msg.forEach(async (value) => {
+          await Message.updateMany(
+            {
+              'message._id' : value.message._id
+            },
+            { $set : { 'message.$.isRead' : true } }
+          )
+        });
+        res.status(httpStatus.StatusCodes.Ok).json({ message: 'All Messages marked as read '});
+      }catch(err){
+        res.status(httpStatus.StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error Occured'});
+      }
+    }
   }
 };
