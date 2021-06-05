@@ -33,6 +33,7 @@ const posts = require('./routes/postRoutes');
 const users = require('./routes/userRoutes');
 const friends = require('./routes/friendsRoute');
 const message=require('./routes/messageRoutes');
+const image = require('./routes/imageRoutes');
 
 
 app.use((req, res, next) => {
@@ -70,6 +71,7 @@ app.use('/api/chatapp', posts);
 app.use('/api/chatapp',users);
 app.use('/api/chatapp', friends);
 app.use('/api/chatapp', message);
+app.use('/api/chatapp',image);
 
 server.listen(3000, () => {
   console.log("Running on Port 3000");
